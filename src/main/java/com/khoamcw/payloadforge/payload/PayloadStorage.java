@@ -55,7 +55,6 @@ public final class PayloadStorage {
 			if (!Files.exists(cfg)) {
 				JsonObject o = new JsonObject();
 				o.addProperty("schemaVersion", SCHEMA_VERSION);
-				o.addProperty("orientationMode", "dispenser_relative");
 				o.addProperty("maxTntPerDeployment", 256);
 				writeAtomic(cfg, GSON.toJson(o));
 			}

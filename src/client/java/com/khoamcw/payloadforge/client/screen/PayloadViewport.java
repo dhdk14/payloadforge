@@ -10,10 +10,10 @@ import java.util.function.IntConsumer;
 /**
  * Orbit-camera 3D preview of a payload, projected onto the GUI.
  *
- * Shows the LOCAL payload space: X = right, Y = up, Z = forward (dispenser facing), seen from behind
- * the dispenser by default. Origin (0,0,0) is the centre of the block in front of the dispenser, so the
- * dispenser block itself sits at (0,0,-1). Entries are drawn at their exact configured positions
- * (a 0.98-block TNT cube each); overlapping entries are NOT separated.
+ * Shows fixed WORLD axes (never rotated by the dispenser): +X = east, +Y = up, +Z = south.
+ * Origin (0,0,0) is the centre of the block in front of the dispenser. Entries are drawn at their
+ * exact configured positions (a 0.98-block TNT cube each); overlapping entries are NOT separated.
+ * Default view looks north: +X to the right, +Y up, +Z towards the viewer.
  *
  * Mouse: drag = rotate, scroll = zoom, click = select the nearest TNT.
  */
@@ -127,6 +127,7 @@ final class PayloadViewport {
 
 	/** @return {screenX, screenY, depth} or null when behind the camera. */
 	private double[] proj(double px, double py, double pz) {
+		pz = -pz; // world Z points south (towards the default viewer); view depth points north
 		double x1 = px * cosY + pz * sinY;
 		double z1 = -px * sinY + pz * cosY;
 		double y2 = py * cosP - z1 * sinP;
@@ -150,18 +151,16 @@ final class PayloadViewport {
 			line(g, -4.5, -0.5, i + 0.0, 4.5 - 0.0, -0.5, i + 0.0, 0xFF262626);
 			line(g, i + 0.0, -0.5, -4.5, i + 0.0, -0.5, 4.5, 0xFF262626);
 		}
-		// block in front of the dispenser (origin block) and the dispenser block itself
+		// the block in front of the dispenser, centred on the origin
 		box(g, 0, 0, 0, 0.5, 0xFF555555);
-		box(g, 0, 0, -1, 0.5, 0xFF44BBBB);
-		label(g, font, 0, 0.7, -1, "Dispenser", 0xFF44BBBB);
 
 		// axes
 		line(g, 0, 0, 0, 2.2, 0, 0, 0xFFFF4444);
 		line(g, 0, 0, 0, 0, 2.2, 0, 0xFF44FF44);
 		line(g, 0, 0, 0, 0, 0, 2.2, 0xFF4488FF);
-		label(g, font, 2.4, 0, 0, "X", 0xFFFF4444);
-		label(g, font, 0, 2.4, 0, "Y", 0xFF44FF44);
-		label(g, font, 0, 0, 2.4, "Z (forward)", 0xFF4488FF);
+		label(g, font, 2.4, 0, 0, "X (east)", 0xFFFF4444);
+		label(g, font, 0, 2.4, 0, "Y (up)", 0xFF44FF44);
+		label(g, font, 0, 0, 2.4, "Z (south)", 0xFF4488FF);
 
 		int n = entries.size();
 		boolean detail = n <= FULL_DETAIL_LIMIT;

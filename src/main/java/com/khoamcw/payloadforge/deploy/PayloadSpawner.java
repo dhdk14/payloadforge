@@ -16,45 +16,20 @@ import java.util.List;
  * Spawns vanilla primed TNT for a payload. No custom ticking, no custom explosion, no velocity.
  *
  * COORDINATE CONVENTION
- * Local origin (0, 0, 0) is the centre of the block IN FRONT of the dispenser (the block the
- * dispenser faces). A local coordinate (x, y, z) is an offset in blocks along the local axes:
- *   local X = "right", local Y = "up", local Z = "forward" (the dispenser facing direction),
- * seen by someone looking along the facing direction. Basis vectors in world axes (right, up, forward):
- *   NORTH: right=+X up=+Y fwd=-Z     SOUTH: right=-X up=+Y fwd=+Z
- *   EAST:  right=+Z up=+Y fwd=+X     WEST:  right=-Z up=+Y fwd=-X
- *   UP:    right=+X up=+Z fwd=+Y     DOWN:  right=+X up=-Z fwd=-Y
- * (always right = forward x up). Rotation is about the reference point only.
- * With orientationMode "world_axes" the offset is added to that origin unrotated.
+ * Payload origin (0, 0, 0) is the centre of the block IN FRONT of the dispenser (the block the
+ * dispenser faces). Entry coordinates are offsets in blocks along the fixed WORLD axes:
+ * +X = east, +Y = up, +Z = south. They are NEVER rotated: the same payload produces the same
+ * layout for a dispenser facing any of the six directions.
  */
 public final class PayloadSpawner {
 	private PayloadSpawner() {
 	}
 
-	/** {right, up, forward} as int[3] world vectors. */
-	static int[][] basis(Direction facing) {
-		return switch (facing) {
-			case NORTH -> new int[][] {{1, 0, 0}, {0, 1, 0}, {0, 0, -1}};
-			case SOUTH -> new int[][] {{-1, 0, 0}, {0, 1, 0}, {0, 0, 1}};
-			case EAST -> new int[][] {{0, 0, 1}, {0, 1, 0}, {1, 0, 0}};
-			case WEST -> new int[][] {{0, 0, -1}, {0, 1, 0}, {-1, 0, 0}};
-			case UP -> new int[][] {{1, 0, 0}, {0, 0, 1}, {0, 1, 0}};
-			case DOWN -> new int[][] {{1, 0, 0}, {0, 0, -1}, {0, -1, 0}};
-		};
-	}
-
-	public static Vec3 toWorld(BlockPos pos, Direction facing, boolean relative, TntEntry e) {
-		double ox = e.x, oy = e.y, oz = e.z;
-		double cx = pos.getX() + facing.getStepX() + 0.5;
-		double cy = pos.getY() + facing.getStepY() + 0.5;
-		double cz = pos.getZ() + facing.getStepZ() + 0.5;
-		if (!relative) {
-			return new Vec3(cx + ox, cy + oy, cz + oz);
-		}
-		int[][] b = basis(facing);
+	public static Vec3 toWorld(BlockPos dispenserPos, Direction facing, TntEntry e) {
 		return new Vec3(
-				cx + ox * b[0][0] + oy * b[1][0] + oz * b[2][0],
-				cy + ox * b[0][1] + oy * b[1][1] + oz * b[2][1],
-				cz + ox * b[0][2] + oy * b[1][2] + oz * b[2][2]);
+				dispenserPos.getX() + facing.getStepX() + 0.5 + e.x,
+				dispenserPos.getY() + facing.getStepY() + 0.5 + e.y,
+				dispenserPos.getZ() + facing.getStepZ() + 0.5 + e.z);
 	}
 
 	/** @return null on success, otherwise the reason nothing was spawned. */
@@ -72,7 +47,7 @@ public final class PayloadSpawner {
 		// Build everything first so a failure can never leave half a payload.
 		List<PrimedTnt> toSpawn = new ArrayList<>(def.entries.size());
 		for (TntEntry e : def.entries) {
-			Vec3 p = toWorld(pos, facing, cfg.dispenserRelative, e);
+			Vec3 p = toWorld(pos, facing, e);
 			PrimedTnt tnt = new PrimedTnt(level, p.x, p.y, p.z, null);
 			tnt.setDeltaMovement(Vec3.ZERO); // the vanilla constructor adds a random hop; we want none
 			tnt.setFuse(e.fuse);

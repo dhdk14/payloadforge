@@ -12,15 +12,12 @@ import java.nio.file.Path;
 
 /** Global settings from {gameDir}/payloadforge/config.json. Bad or missing values fall back to defaults. */
 public final class PayloadConfig {
-	private static volatile PayloadConfig current = new PayloadConfig(true, 256);
+	private static volatile PayloadConfig current = new PayloadConfig(256);
 
-	/** true: local coordinates follow the dispenser facing. false: coordinates are fixed world-axis offsets. */
-	public final boolean dispenserRelative;
 	/** Safety limit: payloads with more TNT than this are refused at deployment. */
 	public final int maxTntPerDeployment;
 
-	private PayloadConfig(boolean dispenserRelative, int maxTntPerDeployment) {
-		this.dispenserRelative = dispenserRelative;
+	private PayloadConfig(int maxTntPerDeployment) {
 		this.maxTntPerDeployment = maxTntPerDeployment;
 	}
 
@@ -29,7 +26,6 @@ public final class PayloadConfig {
 	}
 
 	public static void load() {
-		boolean relative = true;
 		int max = 256;
 		Path cfg = PayloadStorage.rootDir().resolve("config.json");
 		if (Files.exists(cfg)) {
@@ -37,9 +33,6 @@ public final class PayloadConfig {
 				JsonElement root = JsonParser.parseReader(r);
 				if (root.isJsonObject()) {
 					JsonObject o = root.getAsJsonObject();
-					if (o.has("orientationMode")) {
-						relative = !"world_axes".equals(o.get("orientationMode").getAsString());
-					}
 					if (o.has("maxTntPerDeployment")) {
 						max = Math.max(1, o.get("maxTntPerDeployment").getAsInt());
 					}
@@ -48,6 +41,6 @@ public final class PayloadConfig {
 				PayloadForge.LOGGER.warn("Could not read PayloadForge config.json, using defaults: {}", e.getMessage());
 			}
 		}
-		current = new PayloadConfig(relative, max);
+		current = new PayloadConfig(max);
 	}
 }
