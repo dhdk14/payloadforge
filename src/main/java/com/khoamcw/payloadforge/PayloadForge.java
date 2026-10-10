@@ -1,5 +1,6 @@
 package com.khoamcw.payloadforge;
 
+import com.khoamcw.payloadforge.payload.PayloadManager;
 import net.fabricmc.api.ModInitializer;
 
 import net.minecraft.resources.Identifier;
@@ -21,6 +22,7 @@ public class PayloadForge implements ModInitializer {
 		// However, some things (like resources) may still be uninitialized.
 		// Proceed with mild caution.
 
+		PayloadManager.get().loadBlocking();
 		LOGGER.info("PayloadForge initialized");
 	}
 
