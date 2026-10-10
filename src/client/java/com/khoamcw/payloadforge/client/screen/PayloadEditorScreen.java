@@ -16,7 +16,7 @@ import java.util.UUID;
 
 /**
  * Payload editor. The left side edits the name and TNT entries.
- * Local coordinates are in blocks; (0.5, 0.5, 0.5) is the dispenser reference point.
+ * Local coordinates are in blocks; (0, 0, 0) is the centre of the block in front of the dispenser.
  * The 3D viewport on the right is added in Phase 5.
  */
 public class PayloadEditorScreen extends Screen {
@@ -277,7 +277,7 @@ public class PayloadEditorScreen extends Screen {
 		g.fill(vx - 1, vy - 1, vx + vw + 1, vy + vh + 1, 0xFF808080);
 		g.fill(vx, vy, vx + vw, vy + vh, 0xFF101010);
 		g.centeredText(this.font, "3D viewport: coming in Phase 5", vx + vw / 2, vy + vh / 2 - 8, 0xFF777777);
-		g.centeredText(this.font, "Local origin (0.5, 0.5, 0.5) = dispenser centre", vx + vw / 2, vy + vh / 2 + 4,
+		g.centeredText(this.font, "Origin (0,0,0) = centre of block in front of dispenser", vx + vw / 2, vy + vh / 2 + 4,
 				0xFF555555);
 	}
 

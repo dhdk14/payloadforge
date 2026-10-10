@@ -28,7 +28,7 @@ import java.util.stream.Stream;
  * Never throws for bad files on load: they are skipped and logged.
  */
 public final class PayloadStorage {
-	public static final int SCHEMA_VERSION = 1;
+	public static final int SCHEMA_VERSION = 2;
 	private static final Pattern SAFE_ID = Pattern.compile("^[A-Za-z0-9_-]{1,64}$");
 	private static final Gson GSON = new GsonBuilder().setPrettyPrinting().create();
 
@@ -123,8 +123,14 @@ public final class PayloadStorage {
 			for (JsonElement el : arr) {
 				JsonObject e = el.getAsJsonObject();
 				String eid = e.has("id") ? e.get("id").getAsString() : java.util.UUID.randomUUID().toString();
-				def.entries.add(new TntEntry(eid, e.get("x").getAsDouble(), e.get("y").getAsDouble(),
-						e.get("z").getAsDouble(), e.get("fuse").getAsInt()));
+				double ex = e.get("x").getAsDouble(), ey = e.get("y").getAsDouble(), ez = e.get("z").getAsDouble();
+				if (version == 1) {
+					// v1 used origin (0.5,0.5,0.5); v2 uses (0,0,0). BigDecimal avoids 0.6-0.5=0.0999999...
+					ex = shift(ex);
+					ey = shift(ey);
+					ez = shift(ez);
+				}
+				def.entries.add(new TntEntry(eid, ex, ey, ez, e.get("fuse").getAsInt()));
 			}
 			String err = def.validate();
 			if (err != null) {
@@ -136,6 +142,10 @@ public final class PayloadStorage {
 		} catch (RuntimeException e) {
 			throw new IOException("bad or missing field: " + e.getMessage(), e);
 		}
+	}
+
+	private static double shift(double v) {
+		return java.math.BigDecimal.valueOf(v).subtract(java.math.BigDecimal.valueOf(0.5)).doubleValue();
 	}
 
 	public static void write(PayloadDefinition def) throws IOException {

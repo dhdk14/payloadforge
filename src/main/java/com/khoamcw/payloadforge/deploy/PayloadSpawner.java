@@ -16,15 +16,15 @@ import java.util.List;
  * Spawns vanilla primed TNT for a payload. No custom ticking, no custom explosion, no velocity.
  *
  * COORDINATE CONVENTION
- * Local origin (0.5, 0.5, 0.5) is the centre of the dispenser block. A local coordinate (x, y, z)
- * is the offset (x-0.5, y-0.5, z-0.5) in blocks along the local axes:
+ * Local origin (0, 0, 0) is the centre of the block IN FRONT of the dispenser (the block the
+ * dispenser faces). A local coordinate (x, y, z) is an offset in blocks along the local axes:
  *   local X = "right", local Y = "up", local Z = "forward" (the dispenser facing direction),
  * seen by someone looking along the facing direction. Basis vectors in world axes (right, up, forward):
  *   NORTH: right=+X up=+Y fwd=-Z     SOUTH: right=-X up=+Y fwd=+Z
  *   EAST:  right=+Z up=+Y fwd=+X     WEST:  right=-Z up=+Y fwd=-X
  *   UP:    right=+X up=+Z fwd=+Y     DOWN:  right=+X up=-Z fwd=-Y
  * (always right = forward x up). Rotation is about the reference point only.
- * With orientationMode "world_axes" the offset is added to the block centre unrotated.
+ * With orientationMode "world_axes" the offset is added to that origin unrotated.
  */
 public final class PayloadSpawner {
 	private PayloadSpawner() {
@@ -43,8 +43,10 @@ public final class PayloadSpawner {
 	}
 
 	public static Vec3 toWorld(BlockPos pos, Direction facing, boolean relative, TntEntry e) {
-		double ox = e.x - 0.5, oy = e.y - 0.5, oz = e.z - 0.5;
-		double cx = pos.getX() + 0.5, cy = pos.getY() + 0.5, cz = pos.getZ() + 0.5;
+		double ox = e.x, oy = e.y, oz = e.z;
+		double cx = pos.getX() + facing.getStepX() + 0.5;
+		double cy = pos.getY() + facing.getStepY() + 0.5;
+		double cz = pos.getZ() + facing.getStepZ() + 0.5;
 		if (!relative) {
 			return new Vec3(cx + ox, cy + oy, cz + oz);
 		}

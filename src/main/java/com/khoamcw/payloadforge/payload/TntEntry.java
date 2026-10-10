@@ -5,14 +5,14 @@ import java.util.UUID;
 /**
  * One primed TNT in a payload.
  *
- * Coordinates are in block units in the payload's LOCAL space, where (0.5, 0.5, 0.5) is the
- * reference point (the centre of the dispenser block). They are stored exactly as entered.
+ * Coordinates are in block units in the payload's LOCAL space, where (0, 0, 0) is the
+ * payload origin (the centre of the block in front of the dispenser). They are stored exactly as entered.
  * Fuse is the initial fuse in ticks.
  */
 public final class TntEntry {
 	/** Vanilla persists the TNT fuse as a short, so larger values would wrap around when saved. */
 	public static final int MAX_FUSE = Short.MAX_VALUE;
-	public static final double DEFAULT_X = 0.5, DEFAULT_Y = 0.5, DEFAULT_Z = 0.5;
+	public static final double DEFAULT_X = 0.0, DEFAULT_Y = 0.0, DEFAULT_Z = 0.0;
 	public static final int DEFAULT_FUSE = 80;
 
 	public String id;
