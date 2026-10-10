@@ -1,6 +1,8 @@
 package com.khoamcw.payloadforge.client.screen;
 
+import com.khoamcw.payloadforge.network.GivePayloadPacket;
 import com.khoamcw.payloadforge.payload.PayloadDefinition;
+import net.fabricmc.fabric.api.client.networking.v1.ClientPlayNetworking;
 import com.khoamcw.payloadforge.payload.PayloadManager;
 import com.khoamcw.payloadforge.payload.TntEntry;
 import net.minecraft.client.gui.GuiGraphicsExtractor;
@@ -48,8 +50,8 @@ public class PayloadScreen extends Screen {
 				.bounds(margin + (bw + gap) * 2, row1, bw, 20).build());
 		deleteBtn = addRenderableWidget(Button.builder(Component.literal("Delete"), b -> delete())
 				.bounds(margin + (bw + gap) * 3, row1, bw, 20).build());
-		getBtn = addRenderableWidget(Button.builder(Component.literal("Get Payload Item"), b -> {
-		}).bounds(margin, row2, bw, 20).build());
+		getBtn = addRenderableWidget(Button.builder(Component.literal("Get Payload Item"), b -> getItem())
+				.bounds(margin, row2, bw, 20).build());
 		addRenderableWidget(Button.builder(Component.literal("Reload"), b -> reload())
 				.bounds(margin + (bw + gap), row2, bw, 20).build());
 		addRenderableWidget(Button.builder(Component.literal("Done"), b -> onClose())
@@ -72,8 +74,7 @@ public class PayloadScreen extends Screen {
 		editBtn.active = has;
 		dupBtn.active = has;
 		deleteBtn.active = has;
-		// The payload item is implemented in Phase 6.
-		getBtn.active = false;
+		getBtn.active = has;
 		deleteBtn.setMessage(Component.literal(confirmDelete ? "Confirm delete?" : "Delete"));
 	}
 
@@ -84,6 +85,18 @@ public class PayloadScreen extends Screen {
 	private void create() {
 		PayloadDefinition def = PayloadManager.get().create("New Payload");
 		this.minecraft.setScreen(new PayloadEditorScreen(this, def));
+	}
+
+	private void getItem() {
+		if (selectedId == null) {
+			return;
+		}
+		if (!ClientPlayNetworking.canSend(GivePayloadPacket.TYPE)) {
+			status = "Not connected to a world with PayloadForge";
+			return;
+		}
+		ClientPlayNetworking.send(new GivePayloadPacket(selectedId));
+		status = "Requested payload item (see chat)";
 	}
 
 	private void edit() {

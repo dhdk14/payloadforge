@@ -32,6 +32,7 @@ public final class PayloadManager {
 	/** Called once at mod initialisation (startup, not the render loop). */
 	public void loadBlocking() {
 		PayloadStorage.ensureConfig();
+		PayloadConfig.load();
 		replaceAll(PayloadStorage.loadAll());
 		PayloadForge.LOGGER.info("Loaded {} payload(s) from {}", count(), PayloadStorage.payloadsDir());
 	}

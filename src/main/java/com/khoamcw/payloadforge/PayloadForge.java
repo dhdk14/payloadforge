@@ -1,7 +1,11 @@
 package com.khoamcw.payloadforge;
 
 import com.khoamcw.payloadforge.payload.PayloadManager;
+import com.khoamcw.payloadforge.deploy.PayloadDispenserBehavior;
+import com.khoamcw.payloadforge.item.PayloadForgeItems;
+import com.khoamcw.payloadforge.network.PayloadNetworking;
 import net.fabricmc.api.ModInitializer;
+import net.minecraft.world.level.block.DispenserBlock;
 
 import net.minecraft.resources.Identifier;
 
@@ -23,6 +27,9 @@ public class PayloadForge implements ModInitializer {
 		// Proceed with mild caution.
 
 		PayloadManager.get().loadBlocking();
+		PayloadForgeItems.register();
+		PayloadNetworking.register();
+		DispenserBlock.registerBehavior(PayloadForgeItems.PAYLOAD_ITEM, new PayloadDispenserBehavior());
 		LOGGER.info("PayloadForge initialized");
 	}
 
