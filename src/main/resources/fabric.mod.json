@@ -1,0 +1,30 @@
+{
+	"schemaVersion": 1,
+	"id": "payloadforge",
+	"version": "${version}",
+	"name": "PayloadForge",
+	"description": "Custom TNT payload designer with a 3D editor and dispenser deployment.",
+	"authors": [
+		"khoamcw"
+	],
+	"license": "CC0-1.0",
+	"icon": "assets/payloadforge/icon.png",
+	"environment": "*",
+	"entrypoints": {
+		"main": [
+			"com.khoamcw.payloadforge.PayloadForge"
+		],
+		"client": [
+			"com.khoamcw.payloadforge.client.PayloadForgeClient"
+		],
+		"fabric-datagen": [
+			"com.khoamcw.payloadforge.client.PayloadForgeDataGenerator"
+		]
+	},
+	"depends": {
+		"fabricloader": ">=0.19.5",
+		"minecraft": "~26.1.2",
+		"java": ">=25",
+		"fabric-api": "*"
+	}
+}
