@@ -16,7 +16,8 @@ import java.util.UUID;
 
 /**
  * Payload editor. The left side edits the name and TNT entries.
- * Local coordinates are in blocks; (0, 0, 0) is the centre of the block in front of the dispenser.
+ * Coordinates are block offsets from the payload origin (0, 0, 0) = centre of the block in front of the
+ * dispenser, along FIXED world axes (X east, Y up, Z south). They never rotate with the dispenser direction.
  * The 3D viewport on the right is added in Phase 5.
  */
 public class PayloadEditorScreen extends Screen {
@@ -283,6 +284,7 @@ public class PayloadEditorScreen extends Screen {
 		super.extractRenderState(g, mouseX, mouseY, partialTick);
 		g.centeredText(this.font, this.title, this.width / 2, 10, 0xFFFFFFFF);
 		g.text(this.font, "Name", 10, 18, 0xFFAAAAAA);
+		g.text(this.font, "Offsets from origin; X east, Y up, Z south (fixed)", 10 + leftW + 12, 18, 0xFF777777);
 		list.render(g, this.font, mouseX, mouseY);
 
 		int labelY = this.height - 63;

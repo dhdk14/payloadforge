@@ -15,21 +15,21 @@ import java.util.List;
 /**
  * Spawns vanilla primed TNT for a payload. No custom ticking, no custom explosion, no velocity.
  *
- * COORDINATE CONVENTION
- * Payload origin (0, 0, 0) is the centre of the block IN FRONT of the dispenser (the block the
- * dispenser faces). Entry coordinates are offsets in blocks along the fixed WORLD axes:
- * +X = east, +Y = up, +Z = south. They are NEVER rotated: the same payload produces the same
- * layout for a dispenser facing any of the six directions.
+ * COORDINATE CONVENTION (fixed world axes - the dispenser direction NEVER rotates the payload)
+ * The payload origin (0, 0, 0) is the centre of the block in front of the dispenser (the block the
+ * dispenser faces). Each entry is an offset in blocks from that origin along the world axes:
+ *   +X = east, +Y = up, +Z = south.
+ * A dispenser facing up, down or sideways only changes where the origin is, not the offsets.
  */
 public final class PayloadSpawner {
 	private PayloadSpawner() {
 	}
 
 	public static Vec3 toWorld(BlockPos dispenserPos, Direction facing, TntEntry e) {
-		return new Vec3(
-				dispenserPos.getX() + facing.getStepX() + 0.5 + e.x,
-				dispenserPos.getY() + facing.getStepY() + 0.5 + e.y,
-				dispenserPos.getZ() + facing.getStepZ() + 0.5 + e.z);
+		double ox = dispenserPos.getX() + facing.getStepX() + 0.5;
+		double oy = dispenserPos.getY() + facing.getStepY() + 0.5;
+		double oz = dispenserPos.getZ() + facing.getStepZ() + 0.5;
+		return new Vec3(ox + e.x, oy + e.y, oz + e.z);
 	}
 
 	/** @return null on success, otherwise the reason nothing was spawned. */
