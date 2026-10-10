@@ -17,6 +17,8 @@ import java.util.List;
 /** Main PayloadForge screen: payload library list and actions. */
 public class PayloadScreen extends Screen {
 	private final ListPane list = new ListPane();
+	private final PayloadViewport viewport = new PayloadViewport();
+	private PayloadDefinition preview;
 	private List<PayloadDefinition> payloads = new ArrayList<>();
 	private String selectedId;
 	private boolean confirmDelete;
@@ -75,6 +77,12 @@ public class PayloadScreen extends Screen {
 		dupBtn.active = has;
 		deleteBtn.active = has;
 		getBtn.active = has;
+		PayloadDefinition np = selected();
+		if (np == null || preview == null || !np.id.equals(preview.id)) {
+			viewport.resetFit();
+		}
+		preview = np;
+		viewport.setEntries(preview == null ? java.util.List.of() : preview.entries, -1);
 		deleteBtn.setMessage(Component.literal(confirmDelete ? "Confirm delete?" : "Delete"));
 	}
 
@@ -150,7 +158,25 @@ public class PayloadScreen extends Screen {
 	}
 
 	@Override
+	public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+		if (viewport.isDragging()) {
+			viewport.drag(dx, dy);
+			return true;
+		}
+		return super.mouseDragged(event, dx, dy);
+	}
+
+	@Override
+	public boolean mouseReleased(MouseButtonEvent event) {
+		viewport.release();
+		return super.mouseReleased(event);
+	}
+
+	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+		if (viewport.click(event.x(), event.y(), event.button())) {
+			return true;
+		}
 		if (event.button() == 0 && list.contains(event.x(), event.y())) {
 			int i = list.indexAt(event.x(), event.y());
 			if (i >= 0) {
@@ -168,6 +194,9 @@ public class PayloadScreen extends Screen {
 
 	@Override
 	public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+		if (viewport.scroll(x, y, scrollY)) {
+			return true;
+		}
 		if (list.contains(x, y)) {
 			list.scrollBy(scrollY);
 			return true;
@@ -188,21 +217,14 @@ public class PayloadScreen extends Screen {
 		int ph = this.height - 30 - 56;
 		g.fill(px - 1, py - 1, px + pw + 1, py + ph + 1, 0xFF808080);
 		g.fill(px, py, px + pw, py + ph, 0xFF101010);
-		PayloadDefinition sel = selected();
+		PayloadDefinition sel = preview;
 		if (sel == null) {
 			g.text(this.font, "Select or create a payload.", px + 6, py + 6, 0xFFAAAAAA);
 		} else {
 			g.text(this.font, sel.name, px + 6, py + 6, 0xFFFFFFFF);
 			g.text(this.font, sel.entries.size() + " TNT entries", px + 6, py + 18, 0xFFAAAAAA);
-			int y = py + 34;
-			int max = Math.max(0, (ph - 60) / 11);
-			for (int i = 0; i < Math.min(max, sel.entries.size()); i++) {
-				TntEntry e = sel.entries.get(i);
-				g.text(this.font, "#" + (i + 1) + "  " + fmt(e.x) + ", " + fmt(e.y) + ", " + fmt(e.z) + "  fuse " + e.fuse,
-						px + 6, y, 0xFFDDDDDD);
-				y += 11;
-			}
-			g.text(this.font, "3D preview: coming in Phase 5", px + 6, py + ph - 14, 0xFF777777);
+			viewport.setBounds(px, py + 30, pw, ph - 30);
+			viewport.render(g, this.font);
 		}
 		if (!status.isEmpty()) {
 			g.text(this.font, status, this.width - 10 - this.font.width(status), 20, 0xFFAAAAAA);

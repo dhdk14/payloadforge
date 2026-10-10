@@ -23,6 +23,7 @@ public class PayloadEditorScreen extends Screen {
 	private final Screen parent;
 	private final PayloadDefinition def;
 	private final ListPane list = new ListPane();
+	private final PayloadViewport viewport = new PayloadViewport();
 	private int selected = -1;
 	private boolean suppress;
 	private String status = "";
@@ -84,6 +85,9 @@ public class PayloadEditorScreen extends Screen {
 		addRenderableWidget(Button.builder(Component.literal("Cancel"), b -> onClose())
 				.bounds(margin + (bw3 + gap) * 2, by, bw3, 20).build());
 
+		int vx = margin + leftW + 12;
+		viewport.setBounds(vx, 28, this.width - 10 - vx, this.height - 28 - 34);
+		viewport.onSelect = this::select;
 		refreshList();
 		loadFields();
 	}
@@ -104,6 +108,7 @@ public class PayloadEditorScreen extends Screen {
 					+ PayloadScreen.fmt(e.z) + ")  fuse " + e.fuse);
 		}
 		list.setRows(rows, selected);
+		viewport.setEntries(def.entries, selected);
 		boolean has = selected >= 0;
 		removeBtn.active = has;
 		upBtn.active = has && selected > 0;
@@ -232,7 +237,25 @@ public class PayloadEditorScreen extends Screen {
 	}
 
 	@Override
+	public boolean mouseDragged(MouseButtonEvent event, double dx, double dy) {
+		if (viewport.isDragging()) {
+			viewport.drag(dx, dy);
+			return true;
+		}
+		return super.mouseDragged(event, dx, dy);
+	}
+
+	@Override
+	public boolean mouseReleased(MouseButtonEvent event) {
+		viewport.release();
+		return super.mouseReleased(event);
+	}
+
+	@Override
 	public boolean mouseClicked(MouseButtonEvent event, boolean doubleClick) {
+		if (viewport.click(event.x(), event.y(), event.button())) {
+			return true;
+		}
 		if (event.button() == 0 && list.contains(event.x(), event.y())) {
 			int i = list.indexAt(event.x(), event.y());
 			if (i >= 0) {
@@ -245,6 +268,9 @@ public class PayloadEditorScreen extends Screen {
 
 	@Override
 	public boolean mouseScrolled(double x, double y, double scrollX, double scrollY) {
+		if (viewport.scroll(x, y, scrollY)) {
+			return true;
+		}
 		if (list.contains(x, y)) {
 			list.scrollBy(scrollY);
 			return true;
@@ -270,15 +296,7 @@ public class PayloadEditorScreen extends Screen {
 			g.text(this.font, status, 10, this.height - 74, statusColor);
 		}
 
-		int vx = 10 + leftW + 12;
-		int vw = this.width - 10 - vx;
-		int vy = 28;
-		int vh = this.height - 28 - 34;
-		g.fill(vx - 1, vy - 1, vx + vw + 1, vy + vh + 1, 0xFF808080);
-		g.fill(vx, vy, vx + vw, vy + vh, 0xFF101010);
-		g.centeredText(this.font, "3D viewport: coming in Phase 5", vx + vw / 2, vy + vh / 2 - 8, 0xFF777777);
-		g.centeredText(this.font, "Origin (0,0,0) = centre of block in front of dispenser", vx + vw / 2, vy + vh / 2 + 4,
-				0xFF555555);
+		viewport.render(g, this.font);
 	}
 
 	@Override
